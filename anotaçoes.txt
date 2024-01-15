@@ -1,0 +1,359 @@
+EXIBIR FORMULÁRIO
+
+---- Toogle
+
+Durante o noss projeto, temos um formulário que vai aparecer no momento em que clicarmos em um botão, portanto precisamos chamar ele no JS
+
+Em seguida usamos o Toggle, que vai alternar a classe, porque no form, temos a clase Hidden que no css indica none, ou seja, não aparece.
+
+ao usar o toggle nessa classe, ele passa a aprecer quando a função escutar o click do teclado.
+
+const btnAdicionarTarefa = document.querySelector ('.app__button--add-task')
+const formAdicionarTarefa = document.querySelector ('.app__form-add-task')
+
+btnAdicionarTarefa.addEventListener('click', () => {
+    formAdicionarTarefa.classList.toggle ('.hidden')
+} )
+
+
+
+
+SUBMETER FORMULÁRIO
+
+Agora que criamos o formulário precisamos salvar ele em algum local.
+
+Primeiro vamos criar a const textarea que recebe o valor onde a pessoa escreve e salva, e quando ela salvar
+vamos guardar em algum local.
+
+const textarea = document.querySelector ('.app__form-textarea') //Constante que recebe o valor escrito
+const tarefas = [] //array que vai receber e guardar os dados
+
+btnAdicionarTarefa.addEventListener('click', () => {
+    formAdicionarTarefa.classList.toggle ('hidden')
+} ) //EXIBIR FORMULÁRIO
+
+formAdicionarTarefa.addEventListener ('submit', (evento) => {
+    evento.preventDefault();
+    const tarefa = {
+        descricao: textarea.value
+    }
+    tarefas.push(tarefa)
+    localStorage.setItem('tarefas', tarefas)
+})
+
+Aqui é o seguinte, coloquei um evento para escultar quando o cara clicar em salvar para acicionar os dados
+que é o addEventListener e depois o submit que é salvar.
+
+Falei para ele que quando clicar em salvar, ele vai executar a função evento, essa função vai impedir o navegador de atualizar a página
+que é o comportamento padrão dele.
+
+Em seguida, criamos a const tarefa, que vai receber o valor que o usuário escrever no campo por isso passamos por parametro textarea.value.
+
+Depois, como criamos o array tarefas, usamos o push para pegar os dados da tarefa e guardar.
+
+No fim, passamos para o JS onde guardar, no caso poderia ser em um banco de dados postgre por exemplo, mas nesse caso usamos o localStorage, o setItem 
+busca os dados que passar como padrão então passamos 'tarefas' que é justamente o array que precisamos armazenar.
+
+Porém ao testar, o campo value recebe object e não o valor salvo, abaixo vamos ver como ajustar:
+
+
+
+CONSUMINDO A API JSON
+
+O erro ocorreu porque ao chamar a api do localStorage ele tentou transformar a informação em uma string.
+
+Precisamos ter algo no JS que transforme o array em uma string e que consigamos recuperar ele depois.
+
+Como fazer isso?
+
+dentro do nosso código JS temos:
+
+//econtrar o botão adicionar tarefa
+const btnAdicionarTarefa = document.querySelector ('.app__button--add-task')
+const formAdicionarTarefa = document.querySelector ('.app__form-add-task')
+const textarea = document.querySelector ('.app__form-textarea')
+
+const tarefas = []
+
+btnAdicionarTarefa.addEventListener('click', () => {
+    formAdicionarTarefa.classList.toggle ('hidden')
+} )
+
+formAdicionarTarefa.addEventListener ('submit', (evento) => {
+    evento.preventDefault();
+    const tarefa = {
+        descricao: textarea.value
+    }
+    tarefas.push(tarefa)
+    localStorage.setItem('tarefas', tarefas)
+})
+
+dentro do localStorage vamos chamar uma api que consegue converter esse array em string de forma que consigamos busca depois os dados, usamos o termo
+
+PARSE
+
+Para isso usamos a api JSON que faz essa conversão ao chamar o stringfy.
+
+sendo assim a parte de formulário ficaria 
+
+formAdicionarTarefa.addEventListener ('submit', (evento) => {
+    evento.preventDefault();
+    const tarefa = {
+        descricao: textarea.value
+    }
+    tarefas.push(tarefa)
+    localStorage.setItem('tarefas', JSON.stringify(tarefas))
+})
+
+CRIANDO E RECUPERANDO UMA TAREFA A PARTIR DOS DADOS JA GUARDADOS
+
+Geralmente nesses casos, quando herdamos um projeto, tem a LI ou o que temos que criar no JS em html, então o que precisaremos criar será:
+
+<li class="app_section-task-list-item">
+    <svg>
+        <svg class="app_section-task-icon-status" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="12" cy="12" r="12" fill="#FFF"></circle>
+            <path d="M9 16.1719L19.5938 5.57812L21 6.98438L9 18.9844L3.42188 13.4062L4.82812 12L9 16.1719Z" fill="#01080E"></path>
+        </svg>
+    </svg>
+    <p class="app_section-task-list-item-description">
+        Estudando localStorage
+    </p>
+    <button class="app_button-edit">
+        <img src="/imagens/edit.png">
+    </button>
+</li>
+
+Então como faremos no JS?
+
+a partir de uma função, vamos criar cada elemento e no final usaremos o append para colocar os elementos dentro da LI:
+
+function criarElementoTarefa (tarefa) {
+    const li = document.createElement('li')
+    li.classList.add('app_section-task-list-item')
+
+    const svg = document.createElement('svg')
+    svg.innerHTML = `<svg>
+    <svg class="app_section-task-icon-status" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="12" cy="12" r="12" fill="#FFF"></circle>
+        <path d="M9 16.1719L19.5938 5.57812L21 6.98438L9 18.9844L3.42188 13.4062L4.82812 12L9 16.1719Z" fill="#01080E"></path>
+    </svg>
+</svg>`
+
+    const paragrafo = document.createComment ('p')
+    paragrafo.textContent = tarefa.descricao
+
+    const botao = document.createElement ('button')
+    const imagemBotao = document.createElement ('img')
+    imagemBotao.setAttribute('src', '/imagens/edit.png')
+    botao.append(imagemBotao)
+
+    li.append(svg)
+    li.append(paragrafo)
+    li.append(botao)
+    }
+
+LENDO TAREFAS GRAVADAS
+
+Para que o navegador consiga pegar o código gravado no banco, e trazer ele precisamos em primeiro lugar, mudar como definimos o nosso array.
+
+Então nos exemplos anteriores vimos que o array esta: 
+
+Const tarefas = []
+
+agora ele ficará:
+
+const tarefas = JSON.parse(localStorage.getItem('tarefas')) || []
+
+Porque isso? na linha 44, pegamos o array complexo e migramos para string para que
+o servidor consiga guardar os dados, agora usamos o parse para fazer o contrário, pegar a string e trazer pra gente na teclado
+
+por isso usamos o JSON.parse ele faz o contrário do que definimos antes, o contrario do stringfy.
+
+Então esse const vai fazer o seguinte, ele vai na localStorage tarefas e vai ver se tem algo lá,
+se tiver ele vai passar no parse para apresentar os dados, caso não tenha ele entra no ou e entra em um array vazio, caso não tenha tarefas la dentro
+
+
+Feito isso, agora temos que criar a função que, caso tenha uma informação guardada, vai criar a nossa tarefa.
+
+tarefas.forEach(tarefa => {
+    const elementoTarefa = criarElementoTarefa(tarefa)
+});
+
+agora temos que colocar esse Li dentro da UL que está no html fazendo o apeend, ficaria:
+
+para isso vamos criar a variavel da UL como uma const, e chamar ele no final da função, ficando:
+
+tarefas.forEach(tarefa => {
+    const elementoTarefa = criarElementoTarefa(tarefa)
+    ulTarefas.append(elementoTarefa)
+});
+
+Agora criar a Li que precisamos e chamar a função criada:
+
+
+ const paragrafo = document.createElement('p')
+    paragrafo.textContent = tarefa.descricao
+    paragrafo.classList.add('app__section-task-list-item-description')
+
+    const botao = document.createElement ('button')
+    botao.classList.add('app_button-edit')
+
+    const imagemBotao = document.createElement ('img')
+    imagemBotao.setAttribute('src', '/imagens/edit.png')
+    botao.append(imagemBotao)
+
+    li.append(svg)
+    li.append(paragrafo)
+    li.append(botao)
+
+    return li
+}
+
+ATÉ AQUI TEMOS A LI CRIADA COM AS CLASSES ADICIONADAS
+
+ABAIXO TEMOS A FUNCIONALIDADE DO BOTÃO
+
+btnAdicionarTarefa.addEventListener('click', () => {
+    formAdicionarTarefa.classList.toggle ('hidden')
+} )
+
+formAdicionarTarefa.addEventListener ('submit', (evento) => {
+    evento.preventDefault();
+    const tarefa = {
+        descricao: textarea.value
+    }
+    tarefas.push(tarefa)
+    const elementoTarefa = criarElementoTarefa(tarefa)
+    ulTarefas.append(elementoTarefa)
+    localStorage.setItem('tarefas', JSON.stringify(tarefas))
+    textarea.value = ''
+    formAdicionarTarefa.classList.add('hidden')
+})
+
+tarefas.forEach(tarefa => {
+    const elementoTarefa = criarElementoTarefa(tarefa)
+    ulTarefas.append(elementoTarefa)
+});
+
+
+
+
+OUTROS MÉTODOS DOM 
+
+1 - .append():
+
+Bastante utilizado durante o curso, esse método permite adicionar múltiplos nós e/ou strings de texto ao final de um elemento. Se você passar uma string, o método a trata como um texto e a adiciona diretamente.
+
+2 - .appendChild():
+
+É um método mais antigo e é específico para inserir um único nó no final do elemento selecionado. Diferentemente do .append(), o .appendChild() não aceita strings diretamente. Se você quiser adicionar uma string, precisa criar um nó de texto primeiro.
+
+Exemplo:
+
+
+let div = document.querySelector("div");
+let novoSpan = document.createElement("span");
+div.appendChild(novoSpan);
+COPIAR CÓDIGO
+Por que é útil conhecer ambos?
+
+Enquanto .append() oferece mais flexibilidade, permitindo inserir múltiplos elementos e/ou texto, .appendChild() tem amplo suporte e é mais específico na sua tarefa. Para desenvolvedores que estão focados no front-end, é fundamental conhecer ambos os métodos, para poder decidir qual é o mais adequado conforme a situação e o ambiente em que estão trabalhando.
+
+3 - .prepend():
+
+Esse método insere conteúdo no início de um elemento selecionado.
+
+Por que é útil?
+
+Se você deseja adicionar algo no topo de uma lista ou no começo de um container, esta é a função a ser usada.
+
+Exemplo:
+
+
+let lista = document.querySelector("ul");
+lista.prepend("Item 0");  // Este item será inserido no começo da lista.
+COPIAR CÓDIGO
+4 - .insertBefore():
+
+Permite inserir um elemento, especificamente, antes de outro elemento.
+
+Por que é útil?
+
+É muito útil quando você precisa inserir um item em uma posição específica, e não apenas no começo ou fim.
+
+Exemplo:
+
+
+let novoItem = document.createElement("li");
+novoItem.textContent = "Item intermediário";
+let lista = document.querySelector("ul");
+let itemEspecifico = document.querySelector("#itemEspecifico");
+lista.insertBefore(novoItem, itemEspecifico); // Insere o novo item antes do item especificado.
+COPIAR CÓDIGO
+5 - .insertAdjacentElement(), .insertAdjacentHTML() e .insertAdjacentText():
+
+Oferecem controle preciso sobre onde você deseja inserir um novo elemento, seja ele um texto, HTML ou elemento, em relação a um elemento existente.
+
+Por que é útil?
+
+Permitem inserções em quatro posições diferentes: antes, depois, no início ou no final do elemento selecionado.
+
+Exemplo:
+
+
+let div = document.querySelector("div");
+div.insertAdjacentHTML('beforebegin', '<p>Antes da div</p>');
+div.insertAdjacentHTML('afterend', '<p>Depois da div</p>');
+div.insertAdjacentHTML('afterbegin', '<p>No começo da div</p>');
+div.insertAdjacentHTML('beforeend', '<p>No final da div</p>');
+COPIAR CÓDIGO
+6 - .replaceChild():
+
+Substitui um elemento filho por outro.
+
+Por que é útil?
+
+Se você precisa atualizar ou trocar um elemento por um novo, você pode usar este método.
+
+Exemplo:
+
+
+let lista = document.querySelector("ul");
+let antigoItem = document.querySelector("#antigoItem");
+let novoItem = document.createElement("li");
+novoItem.textContent = "Item substituto";
+lista.replaceChild(novoItem, antigoItem); // Substitui o item antigo pelo novo.
+COPIAR CÓDIGO
+7 - .cloneNode():
+
+Duplica um elemento.
+
+Por que é útil?
+
+Se você precisa de uma cópia exata de um elemento (com ou sem seus filhos), este método é perfeito.
+
+Exemplo:
+
+
+let item = document.querySelector("li");
+let itemDuplicado = item.cloneNode(true); // Com "true" ele copia todos os filhos do item.
+document.querySelector("ul").appendChild(itemDuplicado);
+
+--------------------------------------------------------------------------
+Antes de nos aprofundarmos nas mudanças específicas do código, vamos entender uma diferença crucial entre duas maneiras de definir um event listener.
+
+A Diferença entre btnRemoverConcluidas.onclick = () => removerTarefas(true) e btnRemoverConcluidas.onclick = removerTarefas
+btnRemoverConcluidas.onclick = () => removerTarefas(true)
+Ao usar esta sintaxe, estamos definindo o evento de clique do botão para uma função anônima (uma função sem nome) que, quando chamada, executará a função removerTarefas com o argumento true.
+
+Uma maneira simples de entender isso é imaginar que estamos dizendo ao botão: "Quando você for clicado, quero que você execute essa pequena função para mim. E essa pequena função chamará removerTarefas passando true (ou false, como vimos em aula)."
+
+btnRemoverConcluidas.onclick = removerTarefas
+Usando esta sintaxe, estamos diretamente atribuindo o evento de clique do botão à função removerTarefas. Isso significa que, quando o botão for clicado, ele tentará chamar a função removerTarefas com qualquer argumento que o evento de clique forneça (normalmente um objeto de evento).
+
+No nosso contexto, isso causaria um problema porque a função removerTarefas espera um argumento específico (somenteCompletas). Ao atribuir diretamente a função removerTarefas, não estamos garantindo que ela será chamada com os argumentos corretos.
+
+Então, por que usamos a primeira sintaxe?
+
+Nós queremos especificar exatamente como e com quais argumentos a função removerTarefas será chamada. Ao usar a função anônima com () =>, temos controle total sobre a chamada da função, garantindo que ela seja chamada da maneira que desejamos.
